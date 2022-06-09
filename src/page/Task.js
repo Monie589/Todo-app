@@ -16,7 +16,7 @@ function Task() {
   };
   return (
     <div className="container">
-      <h1 className="header">Shopping List</h1>
+      <h1 className="header">My Todo List</h1>
       <hr />
       <form className="form" onSubmit={addTask}>
         <input type="type" className="input" placeholder="Create new task" value={form.note} onChange={(e) => setForm({ ...form, note: e.target.value })} />
