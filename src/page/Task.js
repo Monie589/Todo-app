@@ -2,7 +2,10 @@
 import '../App.css';
 import { useState } from "react"
 
+
+
 function Task() {
+
   const [tasks, setTask] = useState([]);
   const [form, setForm] = useState({ note: "", complete: false });
   const addTask = (e) => {
@@ -14,6 +17,32 @@ function Task() {
     setTask([form, ...tasks]);
     setForm({ note: "", complete: false })
   };
+  const handleCompleted = (item_idx) => {
+    const updatedTask = tasks.map((task, idx) => {
+      if (idx === item_idx) {
+        return { ...task, completed: !task.completed };
+      }
+      return task;
+    });
+    setTask(updatedTask);
+  };
+  const removeTask = (item_idx) => {
+    const updatedTask = tasks.filter((task, idx) => idx !== item_idx);
+    setTask(updatedTask);
+  };
+  const renderTaskItem = (item, index) => {
+    return (
+      <li key={index} className="task-item">
+        <div style={{ flex: 1 }} onClick={(event) => handleCompleted(index)}>
+          <input type="checkbox" checked={item.completed} />
+          <span className={item.completed ? "task-completed" : ""}>{item.note}</span>
+        </div>
+        <button className="task-item-remove" onClick={(event) => removeTask(index)}>
+          Del
+        </button>
+      </li>
+    );
+  };
   return (
     <div className="container">
       <h1 className="header">My Todo List</h1>
@@ -23,16 +52,10 @@ function Task() {
         <button type="submit" className="button">Add</button>
       </form>
       <ul className="todo-list">
-        {tasks.map((item) => (
-          <li className="task-item">
-            <input type="checkbox" className="task-checked" />
-            {item.note}
-          </li>
-
-        ))}</ul>
-
+        {tasks.map(renderTaskItem)}</ul>
     </div>
   );
+
 }
 
 export default Task;
