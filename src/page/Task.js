@@ -1,12 +1,38 @@
 
 import '../App.css';
 import { useState } from "react"
+import { initializeApp } from "firebase/app";
+import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
+const firebaseConfig = {
+  apiKey: "AIzaSyBmLkjBf_fJHgH-PkExdMzPXy0CvSC0jtg",
+  authDomain: "todo-management-1caac.firebaseapp.com",
+  projectId: "todo-management-1caac",
+  storageBucket: "todo-management-1caac.appspot.com",
+  messagingSenderId: "616438243366",
+  appId: "1:616438243366:web:714a9b1b784754977e86e7"
+};
 
-
-
+const firebaseApp = initializeApp(firebaseConfig);
+const db = getFirestore(firebaseApp);
 function Task() {
 
-  const [tasks, setTask] = useState([]);
+
+  const [tasks, setTask] = useState(() => {
+    const todoCollection = collection(db, "Todo-app");
+    getDocs(todoCollection)
+      .then((todo) => {
+        const existingTasks = todo.docs.map((doc) => {
+          console.log("Document => ", doc);
+          return {
+            id: doc.id,
+            ...doc.data(),
+          };
+        });
+        setTask(existingTasks);
+      })
+      .catch((error) => console.warn("Error => ", error));
+    return [];
+  });
   const [form, setForm] = useState({ note: "", complete: false });
   const addTask = (e) => {
     e.preventDefault();
@@ -28,7 +54,7 @@ function Task() {
   };
   const removeTask = (item_idx) => {
     const updatedTask = tasks.filter((task, idx) => idx !== item_idx);
-    setTask(updatedTask);
+     setTask(updatedTask);
   };
   const renderTaskItem = (item, index) => {
     return (
@@ -43,6 +69,7 @@ function Task() {
       </li>
     );
   };
+
   return (
     <div className="container">
       <h1 className="header">My Todo List</h1>
@@ -56,6 +83,6 @@ function Task() {
     </div>
   );
 
-}
+};
 
 export default Task;
