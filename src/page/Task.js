@@ -1,60 +1,40 @@
-
 import '../App.css';
-import { useState } from "react"
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs } from "firebase/firestore/lite";
-const firebaseConfig = {
-  apiKey: "AIzaSyBmLkjBf_fJHgH-PkExdMzPXy0CvSC0jtg",
-  authDomain: "todo-management-1caac.firebaseapp.com",
-  projectId: "todo-management-1caac",
-  storageBucket: "todo-management-1caac.appspot.com",
-  messagingSenderId: "616438243366",
-  appId: "1:616438243366:web:714a9b1b784754977e86e7"
-};
+import { useState ,useEffect } from "react"
+import FirebaseApi from '../api/FirebaseApi'; 
 
-const firebaseApp = initializeApp(firebaseConfig);
-const db = getFirestore(firebaseApp);
+
 function Task() {
+  const [tasks, setTask] = useState([]);
+  const [form, setForm] = useState({ note: "", completed: false });
 
+  const loadTask = async () => {
+      const todo = await FirebaseApi.readData();
+      setTask(todo);
+  };
 
-  const [tasks, setTask] = useState(() => {
-    const todoCollection = collection(db, "Todo-app");
-    getDocs(todoCollection)
-      .then((todo) => {
-        const existingTasks = todo.docs.map((doc) => {
-          console.log("Document => ", doc);
-          return {
-            id: doc.id,
-            ...doc.data(),
-          };
-        });
-        setTask(existingTasks);
-      })
-      .catch((error) => console.warn("Error => ", error));
-    return [];
-  });
-  const [form, setForm] = useState({ note: "", complete: false });
+  useEffect(() => {
+      loadTask();
+  }, []);
+
   const addTask = (e) => {
-    e.preventDefault();
-    if (form.note.length <= 0) {
-      return;
-    }
-
-    setTask([form, ...tasks]);
-    setForm({ note: "", complete: false })
-  };
-  const handleCompleted = (item_idx) => {
-    const updatedTask = tasks.map((task, idx) => {
-      if (idx === item_idx) {
-        return { ...task, completed: !task.completed };
+      e.preventDefault();
+      if (form.note.length <= 0) {
+          return;
       }
-      return task;
-    });
-    setTask(updatedTask);
+
+      FirebaseApi.addData(form).then((resp) => {
+          setTask([resp, ...tasks]);
+          setForm({ note: "", completed: false });
+      });
   };
-  const removeTask = (item_idx) => {
-    const updatedTask = tasks.filter((task, idx) => idx !== item_idx);
-     setTask(updatedTask);
+  const handleCompleted = async (item) => {
+    await FirebaseApi.updateData({ ...item, completed: !item.completed });
+    await loadTask();
+};  
+  const removeTask = async (item_idx) => {
+      await FirebaseApi.deleteData(item_idx);
+      await loadTask();
+
   };
   const renderTaskItem = (item, index) => {
     return (
@@ -85,4 +65,4 @@ function Task() {
 
 };
 
-export default Task;
+export default Task; 
